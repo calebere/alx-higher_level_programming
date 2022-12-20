@@ -1,5 +1,3 @@
-
-
 #!/usr/bin/python3
 """ Class Square that defines a square by
     Private instance attribute: size
