@@ -1,51 +1,49 @@
 #!/usr/bin/python3
+"""Reads from standard input and computes metrics.
+After every ten lines or the input of a keyboard interruption (CTRL + C),
+prints the following statistics:
+    - Total file size up to that point.
+    - Count of read status codes up to that point.
 """
-Reads from standard input and computes metrics
-"""
 
 
-if __name__ == "__main__":
-    import sys
+from sys import stdin
 
-    stdin = sys.stdin
 
-    c = 0
-    size = 0
-    vd = ['200', '301', '400', '401', '403', '404', '405', '500']
-    st = {}
+status_codes = {
+        '200': 0,
+        '301': 0,
+        '400': 0,
+        '401': 0,
+        '403': 0,
+        '404': 0,
+        '405': 0,
+        '500': 0
+        }
 
-    try:
-        for line in stdin:
-            if c == 10:
-                print("File size: {}".format(size))
-                for i in sorted(st):
-                    print("{}: {}".format(i, st[i]))
-                c = 1
-            else:
-                c = c + 1
+size = i = 0
 
-            line = line.split()
 
-            try:
-                size = size + int(line[-1])
-            except (IndexError, ValueError):
-                pass
+def printer():
+    '''prints the statistics'''
+    print("File size: {}".format(size))
+    for key, value in sorted(status_codes.items()):
+        if value > 0:
+            print('{:s}: {:d}'.format(key, value))
 
-            try:
-                if line[-2] in vd:
-                    if st.get(line[-2], -1) == -1:
-                        st[line[-2]] = 1
-                    else:
-                        st[line[-2]] = st[line[-2]] + 1
-            except IndexError:
-                pass
 
-        print("File size: {}".format(size))
-        for i in sorted(st):
-            print("{}: {}".format(i, st[i]))
+try:
+    for line in stdin:
+        split_line = line.split()
+        if len(split_line) >= 2:
+            stats = split_line[-2]
+            size += int(split_line[-1])
+            if stats in status_codes:
+                status_codes[stats] += 1
+        i += 1
 
-    except KeyboardInterrupt:
-        print("File size: {}".format(size))
-        for i in sorted(st):
-            print("{}: {}".format(i, st[i]))
-        raise
+        if i % 10 == 0:
+            printer()
+    printer()
+except KeyboardInterrupt as e:
+    printer()
